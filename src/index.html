@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMS | JPDB</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fas fa-database"></i>
+                <span>EMS<span class="badge">JPDB</span></span>
+            </div>
+            <nav>
+                <button class="nav-item active" onclick="switchPanel('add')">
+                    <i class="fas fa-user-plus"></i> Add
+                </button>
+                <button class="nav-item" onclick="switchPanel('get')">
+                    <i class="fas fa-search"></i> Get
+                </button>
+                <button class="nav-item" onclick="switchPanel('all')">
+                    <i class="fas fa-table-list"></i> Records
+                </button>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <!-- ADD PANEL -->
+            <div id="addPanel" class="panel active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-plus"></i> Add Employee</h2>
+                        <p>Fill the form to create new record</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="input-field">
+                                <label>Employee ID *</label>
+                                <input type="text" id="empId" placeholder="e.g., 101">
+                            </div>
+                            <div class="input-field">
+                                <label>Full Name *</label>
+                                <input type="text" id="empName" placeholder="Rajesh Kumar">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-field">
+                                <label>Email *</label>
+                                <input type="email" id="email" placeholder="employee@company.com">
+                            </div>
+                            <div class="input-field">
+                                <label>Salary (₹)</label>
+                                <input type="number" id="salary" placeholder="50000">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="input-field">
+                                <label>Department</label>
+                                <select id="dept">
+                                    <option value="IT">IT</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Marketing">Marketing</option>
+                                </select>
+                            </div>
+                            <div class="input-field">
+                                <label>Joining Date</label>
+                                <input type="date" id="joinDate">
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="saveRecord()">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearForm()">
+                                <i class="fas fa-eraser"></i> Clear
+                            </button>
+                        </div>
+                        <div id="toastMsg" class="toast"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GET PANEL -->
+            <div id="getPanel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-id-card"></i> Get Employee</h2>
+                        <p>Search by employee ID</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-area">
+                            <input type="text" id="searchId" placeholder="Enter Employee ID">
+                            <button class="btn btn-primary" onclick="fetchEmployeeById()">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                        <div id="detailBox" class="detail-card" style="display: none">
+                            <h3><i class="fas fa-address-card"></i>Details</h3>
+                            <div><span>ID</span> <span id="d_id"></span></div>
+                            <div><span>Name</span> <span id="d_name"></span></div>
+                            <div><span>Email</span> <span id="d_email"></span></div>
+                            <div><span>Salary</span> <span id="d_salary"></span></div>
+                            <div><span>Dept</span> <span id="d_dept"></span></div>
+                            <div><span>Joining</span> <span id="d_join"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALL RECORDS PANEL -->
+            <div id="allPanel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-database"></i> All Records</h2>
+                        <button class="btn btn-sm" onclick="loadAllRecords()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="card-body" style="overflow-x: auto;">
+                        <table class="data-table" id="employeeTable">
+                            <thead>
+                                <tr><th>ID</th><th>Name</th><th>Email</th><th>Salary</th><th>Dept</th><th>Joining</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr><td colspan="7" class="text-muted">Click refresh to load</td></tr>
+                            </tbody>
+                        ;</table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-pen"></i> Edit Employee</h3>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="input-field">
+                    <label>ID</label>
+                    <input type="text" id="editId" readonly>
+                </div>
+                <div class="input-field">
+                    <label>Name</label>
+                    <input type="text" id="editName">
+                </div>
+                <div class="input-field">
+                    <label>Email</label>
+                    <input type="email" id="editEmail">
+                </div>
+                <div class="input-field">
+                    <label>Salary</label>
+                    <input type="number" id="editSalary">
+                </div>
+                <div class="input-field">
+                    <label>Department</label>
+                    <select id="editDept">
+                        <option>IT</option><option>HR</option><option>Finance</option><option>Marketing</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label>Joining Date</label>
+                    <input type="date" id="editDate">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="confirmUpdate()">Update</button>
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
